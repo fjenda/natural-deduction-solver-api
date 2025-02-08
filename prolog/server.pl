@@ -12,7 +12,6 @@
 % Endpoint to handle prove requests
 :- http_handler(root(prove), prove_request, [method(post)]).
 
-
 % Handle the prove request
 prove_request(Request) :-
     % Read JSON data
@@ -20,8 +19,8 @@ prove_request(Request) :-
 
     % Apply the rule
     (  prove_handler(Data.premises, Data.conclusion, Data.rule)
-    -> Reply = json([success =  true])
-    ;  Reply = json([success = false])
+    -> Reply = json([success =  true, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
+    ;  Reply = json([success = false, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
     ),
 
     reply_json(Reply).
