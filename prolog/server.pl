@@ -1,5 +1,6 @@
 :- debug(http(request)).
 :- debug(http(json)).
+:- debug(api).
 
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
@@ -17,14 +18,28 @@ prove_request(Request) :-
     % Read JSON data
     http_read_json_dict(Request, Data),
 
-    maplist(string_to_term, Data.premises, Premises),
+    (   is_list(Data.premises)
+    ->  maplist(string_to_term, Data.premises, Premises)
+    ;   string_to_term(Data.premises, Premises)
+    ),
+
     string_to_term(Data.conclusion, Conclusion),
     atom_string(Rule, Data.rule),
 
-    % Apply the rule
-    (  prove_handler(Premises, Conclusion, Rule)
-    -> Reply = json([success =  true, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
-    ;  Reply = json([success = false, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
+    debug(api, 'Premises: ~w', [Premises]),
+
+    % Get all possible results
+    findall(ConclusionResult, prove_handler(Premises, ConclusionResult, Rule), Results),
+
+    % Results to string for JSON
+    maplist(term_string, Results, ResultsStrings),
+
+    debug(api, 'Results: ~w', ResultsStrings),
+
+    % Construct the JSON reply
+    (   ResultsStrings \= []
+    ->  Reply = json([success = true, results = ResultsStrings, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
+    ;   Reply = json([success = false, premises = Premises, rule = Rule])
     ),
 
     reply_json(Reply).

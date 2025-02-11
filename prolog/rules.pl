@@ -8,6 +8,12 @@ rule('MP', 2, imp_elim).
 rule('IE', 2, eq_intro).
 rule('EE', 1, eq_elim).
 
+% Predicate
+predicate(P, X).
+
+% Function
+
+
 % Actual rule logic
 
 % Conjunction
