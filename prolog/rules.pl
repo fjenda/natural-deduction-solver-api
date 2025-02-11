@@ -1,7 +1,8 @@
 % Rule format: rule(Name, PremiseCount, ApplyPredicate)
 rule('IC', 2, and_intro).
 rule('EC', 1, and_elim).
-rule('ID', 1, or_intro).
+%rule('ID', 1, or_intro).
+rule('ID', 2, or_intro).
 rule('ED', 2, or_elim).
 rule('II', 2, imp_intro).
 rule('MP', 2, imp_elim).
@@ -22,14 +23,16 @@ and_elim([and(A, _)], A).
 and_elim([and(_, B)], B).
 
 % Disjunction
-or_intro([A], or(A, _)).
-or_intro([B], or(_, B)).
+or_intro([A, B], or(A, B)).
+%or_intro([B], or(_, B)).
+%or_intro([A], or(A, _)).
 or_elim([or(A, B), not(A)], B).
 or_elim([or(A, B), not(B)], A).
 
 % Implication
 imp_intro([A, B], imp(A, B)).
 imp_elim([imp(A, B), A], B).
+imp_elim([A, imp(A, B)], B).
 
 % Equivalence
 eq_intro([imp(A, B), imp(B, A)], eq(A, B)).

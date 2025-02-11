@@ -13,6 +13,12 @@ app.use(bodyParser.json()); // Parse JSON body
 app.post('/prove', async (req, res) => {
     try {
         const response = await axios.post('http://127.0.0.1:8080/prove', req.body);
+
+        const responseData = response.data;
+        if (typeof responseData.success === "string") {
+            responseData.success = responseData.success === "true";
+        }
+
         res.json(response.data);
     } catch (error) {
         console.error("Error communicating with Prolog:", error.message);

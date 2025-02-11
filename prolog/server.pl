@@ -12,6 +12,7 @@
 
 % Endpoint to handle prove requests
 :- http_handler(root(prove), prove_request, [method(post)]).
+:- http_handler(root(usable), usable_request, [method(post)]).
 
 % Handle the prove request
 prove_request(Request) :-
@@ -26,20 +27,19 @@ prove_request(Request) :-
     string_to_term(Data.conclusion, Conclusion),
     atom_string(Rule, Data.rule),
 
-    debug(api, 'Premises: ~w', [Premises]),
-
     % Get all possible results
     findall(ConclusionResult, prove_handler(Premises, ConclusionResult, Rule), Results),
 
     % Results to string for JSON
-    maplist(term_string, Results, ResultsStrings),
-
-    debug(api, 'Results: ~w', ResultsStrings),
+    (   is_list(Results)
+    ->  maplist(term_string, Results, ResultsStrings)
+    ;   string_to_term(Results, ResultsStrings)
+    ),
 
     % Construct the JSON reply
     (   ResultsStrings \= []
-    ->  Reply = json([success = true, results = ResultsStrings, premises = Data.premises, conclusion = Data.conclusion, rule = Data.rule])
-    ;   Reply = json([success = false, premises = Premises, rule = Rule])
+    ->  Reply = json([success = true, results = ResultsStrings])
+    ;   Reply = json([success = false, premises = Data.premises, rule = Data.rule])
     ),
 
     reply_json(Reply).
