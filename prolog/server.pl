@@ -12,7 +12,6 @@
 
 % Endpoint to handle prove requests
 :- http_handler(root(prove), prove_request, [method(post)]).
-:- http_handler(root(usable), usable_request, [method(post)]).
 
 % Handle the prove request
 prove_request(Request) :-
@@ -31,10 +30,8 @@ prove_request(Request) :-
     findall(ConclusionResult, prove_handler(Premises, ConclusionResult, Rule), Results),
 
     % Results to string for JSON
-    (   is_list(Results)
-    ->  maplist(term_string, Results, ResultsStrings)
-    ;   string_to_term(Results, ResultsStrings)
-    ),
+    maplist(term_string, Results, ResultsStrings),
+
 
     % Construct the JSON reply
     (   ResultsStrings \= []
