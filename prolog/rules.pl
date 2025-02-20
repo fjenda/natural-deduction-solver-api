@@ -63,6 +63,14 @@ has_conflict_with_rows(Proof, Conflict1, Conflict2) :-
     find_conflict(Proof, Conflict1, Conflict2).
 
 % conflict checker
+%conflict_handler(Proof, Conflict1, Conflict2, Result) :-
+%    has_conflict_with_rows(Proof, Conflict1, Conflict2),
+%    Result = true.
+
 conflict_handler(Proof, Conflict1, Conflict2, Result) :-
-    has_conflict_with_rows(Proof, Conflict1, Conflict2),
-    Result = true.
+    (   has_conflict_with_rows(Proof, Conflict1, Conflict2)
+    ->  Result = true
+    ;   Conflict1 = none,
+        Conflict2 = none,
+        Result = false
+    ).

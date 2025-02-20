@@ -48,7 +48,7 @@ conflict_request(Request) :-
     % Read JSON data
     http_read_json_dict(Request, Data),
 
-    debug(api, 'Data: ~w', [Data]),
+%    debug(api, 'Data: ~w', [Data]),
 
     (   is_list(Data.proof)
     ->  maplist(string_to_term, Data.proof, Proof)
@@ -57,13 +57,19 @@ conflict_request(Request) :-
 
     % Check for conflicts
     conflict_handler(Proof, C1, C2, Result),
-    maplist(term_string, [C1, C2], ResultsStrings),
+%    maplist(term_string, [C1, C2], ResultsStrings),
 
-    % Construct the JSON reply
     (   Result
-    ->  Reply = json([success = true, results = ResultsStrings])
+    ->  maplist(term_string, [C1, C2], ResultsStrings),
+        Reply = json([success = true, results = ResultsStrings])
     ;   Reply = json([success = false])
     ),
+
+    % Construct the JSON reply
+%    (   Result
+%    ->  Reply = json([success = true, results = ResultsStrings])
+%    ;   Reply = json([success = false])
+%    ),
 
     reply_json(Reply).
 

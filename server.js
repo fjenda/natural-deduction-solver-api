@@ -4,7 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const port = 4000;
+const port = 3000;
 
 app.use(cors()); // Allow frontend requests
 app.use(bodyParser.json()); // Parse JSON body
