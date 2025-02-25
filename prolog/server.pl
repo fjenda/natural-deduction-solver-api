@@ -7,14 +7,29 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_cors)).
 
+
+% Helper function for converting a string to term
+string_to_term(String, Term) :-
+    read_term_from_atom(String, Term, []).
+
+% Start server function
+start_server(Port) :-
+    http_server(http_dispatch, [port(Port)]).
+
 % Load RuleSet
 :- consult('rules.pl').
+
+% Load Substitution script
+:- consult('substitution.pl').
 
 % Endpoint to handle prove requests
 :- http_handler(root(prove), prove_request, [method(post)]).
 
 % Endpoint to check for conflicts
 :- http_handler(root(conflict), conflict_request, [method(post)]).
+
+% Endpoint to handle substitutions
+:- http_handler(root(substitute), substitute_request, [method(post)]).
 
 % Handle the prove request
 prove_request(Request) :-
@@ -48,8 +63,6 @@ conflict_request(Request) :-
     % Read JSON data
     http_read_json_dict(Request, Data),
 
-%    debug(api, 'Data: ~w', [Data]),
-
     (   is_list(Data.proof)
     ->  maplist(string_to_term, Data.proof, Proof)
     ;   string_to_term(Data.proof, Proof)
@@ -57,7 +70,6 @@ conflict_request(Request) :-
 
     % Check for conflicts
     conflict_handler(Proof, C1, C2, Result),
-%    maplist(term_string, [C1, C2], ResultsStrings),
 
     (   Result
     ->  maplist(term_string, [C1, C2], ResultsStrings),
@@ -65,16 +77,30 @@ conflict_request(Request) :-
     ;   Reply = json([success = false])
     ),
 
-    % Construct the JSON reply
-%    (   Result
-%    ->  Reply = json([success = true, results = ResultsStrings])
-%    ;   Reply = json([success = false])
-%    ),
-
     reply_json(Reply).
 
-string_to_term(String, Term) :-
-    read_term_from_atom(String, Term, []).
+substitute_request(Request) :-
+    % Read JSON data
+    http_read_json_dict(Request, Data),
 
-start_server(Port) :-
-    http_server(http_dispatch, [port(Port)]).
+    % Theorem to substitute
+    string_to_term(Data.theorem, Theorem),
+
+    % Variables
+    (   is_list(Data.oldVars)
+    ->  maplist(string_to_term, Data.oldVars, OldVars)
+    ;   string_to_term(Data.oldVars, OldVars)
+    ),
+
+    (   is_list(Data.newVars)
+    ->  maplist(string_to_term, Data.newVars, NewVars)
+    ;   string_to_term(Data.newVars, NewVars)
+    ),
+
+    % Perform substitution
+    substitute(Theorem, OldVars, NewVars, Result),
+
+    % Construct the JSON reply
+    Reply = json([success = true, result = Result]),
+
+    reply_json(Reply).

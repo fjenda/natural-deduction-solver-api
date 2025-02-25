@@ -12,6 +12,7 @@ app.use(bodyParser.json()); // Parse JSON body
 const ENDPOINTS = [
     '/prove',
     '/conflict',
+    '/substitute'
 ];
 
 // Handle requests
